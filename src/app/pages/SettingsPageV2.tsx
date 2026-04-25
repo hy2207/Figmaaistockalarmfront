@@ -7,6 +7,8 @@ import { Switch } from '../components/ui/switch';
 import type { RiskProfile } from '../types';
 import { toast } from 'sonner';
 import { Settings as SettingsIcon, User, Bell, Shield, LogOut, Trash2, TestTube, Check } from 'lucide-react';
+import { Badge } from '../components/ui/badge';
+import { ROUTES } from '../routes';
 
 interface SettingsPageV2Props {
   onNavigate: (route: string) => void;
@@ -30,6 +32,14 @@ export function SettingsPageV2({ onNavigate }: SettingsPageV2Props) {
   useEffect(() => {
     addDebugEvent('settings_view');
   }, []);
+
+  useEffect(() => {
+    setEditingWatchlist(watchlist);
+  }, [watchlist]);
+
+  useEffect(() => {
+    setLocalRiskProfile(riskProfile);
+  }, [riskProfile]);
 
   const toggleWatchlistItem = (ticker: string) => {
     if (editingWatchlist.includes(ticker)) {
@@ -57,7 +67,7 @@ export function SettingsPageV2({ onNavigate }: SettingsPageV2Props) {
     if (confirm('로그아웃하시겠습니까?')) {
       setIsLoggedIn(false);
       addDebugEvent('logout');
-      onNavigate('/login');
+      onNavigate(ROUTES.login);
     }
   };
 
@@ -76,7 +86,7 @@ export function SettingsPageV2({ onNavigate }: SettingsPageV2Props) {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-red-50">
-      <NavigationV2 currentRoute="/settings" onNavigate={onNavigate} />
+      <NavigationV2 currentRoute={ROUTES.settings} onNavigate={onNavigate} />
 
       <div className="max-w-5xl mx-auto p-4 pb-24 md:pb-8">
         {/* Header */}
@@ -124,8 +134,11 @@ export function SettingsPageV2({ onNavigate }: SettingsPageV2Props) {
             <p className="text-sm text-slate-600 mb-4">
               현재 선택: {editingWatchlist.join(', ')} ({editingWatchlist.length}/3)
             </p>
+            <p className="text-xs text-slate-500 mb-4">
+              종목과 섹터를 함께 고를 수 있으며, 이 선택은 홈 카드와 이력 필터에 같이 반영됩니다.
+            </p>
             <div className="grid grid-cols-3 gap-2 mb-4">
-              {availableWatchlistItems.map(({ ticker, name }) => {
+              {availableWatchlistItems.map(({ ticker, name, kind }) => {
                 const isSelected = editingWatchlist.includes(ticker);
                 return (
                   <button
@@ -148,8 +161,16 @@ export function SettingsPageV2({ onNavigate }: SettingsPageV2Props) {
                       </div>
                     )}
                     <div className="relative">
-                      <div className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-slate-900'}`}>
-                        {ticker}
+                      <div className="flex items-center justify-center gap-1">
+                        <div className={`text-sm font-bold ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                          {ticker}
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] ${isSelected ? 'border-white/30 bg-white/10 text-white' : ''}`}
+                        >
+                          {kind === 'ticker' ? '종목' : '섹터'}
+                        </Badge>
                       </div>
                       <div className={`text-xs ${isSelected ? 'text-blue-100' : 'text-slate-600'}`}>
                         {name}
@@ -241,7 +262,7 @@ export function SettingsPageV2({ onNavigate }: SettingsPageV2Props) {
             </div>
             <div className="grid grid-cols-2 gap-2">
               <Button
-                onClick={() => onNavigate('/state/no-call')}
+                onClick={() => onNavigate(ROUTES.stateNoCall)}
                 variant="outline"
                 size="sm"
                 className="rounded-2xl"
@@ -249,7 +270,7 @@ export function SettingsPageV2({ onNavigate }: SettingsPageV2Props) {
                 No Call
               </Button>
               <Button
-                onClick={() => onNavigate('/state/loading')}
+                onClick={() => onNavigate(ROUTES.stateLoading)}
                 variant="outline"
                 size="sm"
                 className="rounded-2xl"
@@ -257,7 +278,7 @@ export function SettingsPageV2({ onNavigate }: SettingsPageV2Props) {
                 Loading
               </Button>
               <Button
-                onClick={() => onNavigate('/state/empty')}
+                onClick={() => onNavigate(ROUTES.stateEmpty)}
                 variant="outline"
                 size="sm"
                 className="rounded-2xl"
@@ -265,7 +286,7 @@ export function SettingsPageV2({ onNavigate }: SettingsPageV2Props) {
                 Empty
               </Button>
               <Button
-                onClick={() => onNavigate('/state/error')}
+                onClick={() => onNavigate(ROUTES.stateError)}
                 variant="outline"
                 size="sm"
                 className="rounded-2xl"

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { performanceRecords } from '../mockData';
+import { performanceRecords, watchlistItemByTicker } from '../mockData';
 import { NavigationV2 } from '../components/NavigationV2';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Filter, TrendingUp, TrendingDown, Award, Calendar } from 'lucide-react';
+import { usePerformanceStats } from '../hooks/usePerformanceStats';
+import { ROUTES } from '../routes';
 
 interface ArchivePageV2Props {
   onNavigate: (route: string) => void;
@@ -25,14 +27,15 @@ export function ArchivePageV2({ onNavigate }: ArchivePageV2Props) {
       ? performanceRecords
       : performanceRecords.filter(r => r.ticker === selectedFilter);
 
-  const successCount = filteredRecords.filter(r => r.hitFlag === 'success').length;
-  const successRate = filteredRecords.length > 0
-    ? ((successCount / filteredRecords.length) * 100).toFixed(0)
-    : '0';
+  const sortedRecords = [...filteredRecords].sort((a, b) =>
+    new Date(b.evaluatedAt).getTime() - new Date(a.evaluatedAt).getTime()
+  );
+
+  const { successRate } = usePerformanceStats(sortedRecords);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50 to-pink-50">
-      <NavigationV2 currentRoute="/archive" onNavigate={onNavigate} />
+      <NavigationV2 currentRoute={ROUTES.archive} onNavigate={onNavigate} />
 
       <div className="max-w-5xl mx-auto p-4 pb-24 md:pb-8">
         {/* Header */}
@@ -54,7 +57,7 @@ export function ArchivePageV2({ onNavigate }: ArchivePageV2Props) {
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-3 border border-blue-100">
                 <div className="text-xs text-slate-600 mb-1">총 기록</div>
-                <div className="text-xl font-bold text-slate-900">{filteredRecords.length}</div>
+                <div className="text-xl font-bold text-slate-900">{sortedRecords.length}</div>
               </div>
               <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-3 border border-green-100">
                 <div className="text-xs text-slate-600 mb-1">성공률</div>
@@ -62,7 +65,11 @@ export function ArchivePageV2({ onNavigate }: ArchivePageV2Props) {
               </div>
               <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-3 border border-purple-100">
                 <div className="text-xs text-slate-600 mb-1">필터</div>
-                <div className="text-sm font-bold text-slate-900">{selectedFilter}</div>
+                <div className="text-sm font-bold text-slate-900">
+                  {selectedFilter === '전체'
+                    ? selectedFilter
+                    : watchlistItemByTicker[selectedFilter]?.name ?? selectedFilter}
+                </div>
               </div>
             </div>
           </div>
@@ -89,7 +96,7 @@ export function ArchivePageV2({ onNavigate }: ArchivePageV2Props) {
                       : 'bg-white border-2 border-slate-200 text-slate-600 hover:border-purple-300 hover:scale-102'
                   }`}
                 >
-                  {filter}
+                  {filter === '전체' ? filter : watchlistItemByTicker[filter]?.name ?? filter}
                 </button>
               ))}
             </div>
@@ -97,19 +104,23 @@ export function ArchivePageV2({ onNavigate }: ArchivePageV2Props) {
         </div>
 
         {/* Records */}
-        {filteredRecords.length === 0 ? (
+        {sortedRecords.length === 0 ? (
           <div className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-xl p-12 text-center space-y-4">
             <div className="w-20 h-20 bg-gradient-to-br from-purple-100 to-pink-100 rounded-full flex items-center justify-center mx-auto">
               <Award className="w-10 h-10 text-purple-600" />
             </div>
             <div className="space-y-2">
-              <p className="text-slate-700 font-medium">아직 쌓인 추천 이력이 없습니다</p>
+              <p className="text-slate-700 font-medium">
+                {selectedFilter === '전체'
+                  ? '아직 쌓인 추천 이력이 없습니다'
+                  : '선택한 항목의 이력이 아직 없습니다'}
+              </p>
               <p className="text-sm text-slate-500">
                 추천 카드가 평가되면 성공과 실패 기록이 여기에 표시됩니다.
               </p>
             </div>
             <Button
-              onClick={() => onNavigate('/settings')}
+              onClick={() => onNavigate(ROUTES.settings)}
               className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-2xl shadow-lg"
             >
               관심 종목 수정하기
@@ -117,7 +128,7 @@ export function ArchivePageV2({ onNavigate }: ArchivePageV2Props) {
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredRecords.map((record, index) => (
+            {sortedRecords.map((record, index) => (
               <div
                 key={index}
                 className="bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-lg hover:shadow-xl transition-all p-5"

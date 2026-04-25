@@ -2,6 +2,7 @@ import { useApp } from '../context/AppContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { TrendingUp, Sparkles, Shield, Zap } from 'lucide-react';
+import { ROUTES } from '../routes';
 
 interface LoginPageV2Props {
   onNavigate: (route: string) => void;
@@ -13,13 +14,13 @@ export function LoginPageV2({ onNavigate }: LoginPageV2Props) {
   const handleLogin = () => {
     addDebugEvent('login_attempt');
     setIsLoggedIn(true);
-    onNavigate('/onboarding');
+    onNavigate(ROUTES.onboarding);
   };
 
   const handleDemoHome = () => {
     addDebugEvent('demo_home_click');
     setIsLoggedIn(true);
-    onNavigate('/');
+    onNavigate(ROUTES.home);
   };
 
   return (
@@ -137,6 +138,7 @@ export function LoginPageV2({ onNavigate }: LoginPageV2Props) {
           <div className="text-center text-xs text-slate-500 mt-6 space-y-1 bg-white/50 backdrop-blur-sm rounded-2xl p-4">
             <p>투자 참고용 정보이며 투자 자문이 아닙니다.</p>
             <p>실제 투자 결정과 책임은 사용자에게 있습니다.</p>
+            <p>프로토타입에서는 로그인 상태와 설정이 이 브라우저에 임시 저장됩니다.</p>
           </div>
         </div>
       </div>

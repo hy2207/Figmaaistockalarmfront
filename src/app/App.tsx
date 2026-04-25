@@ -9,71 +9,132 @@ import { SettingsPageV2 } from './pages/SettingsPageV2';
 import { StatePageV2 } from './pages/StatePageV2';
 import { DebugPanelV2 } from './components/DebugPanelV2';
 import { Toaster } from './components/ui/sonner';
+import { ROUTES, getRouteFromHash, isRecommendationRoute, normalizeRoute } from './routes';
 
+/**
+ * @component AppContent
+ * @description
+ * [Developer] Handles client-side routing based on window.location.hash. 
+ * Renders the appropriate page component corresponding to the current route.
+ * Redirects unauthenticated users to the login page.
+ * 
+ * [AI Agent] This is the core router of the prototype. When adding a new page,
+ * 1. Define the route in `routes.ts`.
+ * 2. Add the corresponding `if` block here to render the new page component.
+ * 3. Make sure to pass `onNavigate={handleNavigate}` to the page.
+ */
 function AppContent() {
   const { isLoggedIn } = useApp();
-  const [currentRoute, setCurrentRoute] = useState('/login');
-  const [recId, setRecId] = useState<string | null>(null);
+  const [currentRoute, setCurrentRoute] = useState(() =>
+    typeof window === 'undefined' ? ROUTES.login : getRouteFromHash(window.location.hash)
+  );
 
   useEffect(() => {
-    if (!isLoggedIn && currentRoute !== '/login') {
-      setCurrentRoute('/login');
+    if (typeof window === 'undefined') {
+      return;
     }
-  }, [isLoggedIn]);
 
-  const handleNavigate = (route: string) => {
-    if (route.startsWith('/recommendations/')) {
-      const id = route.split('/recommendations/')[1];
-      setRecId(id);
-      setCurrentRoute('/recommendations');
-    } else {
-      setCurrentRoute(route);
+    if (!window.location.hash) {
+      window.history.replaceState(null, '', `#${currentRoute}`);
     }
+
+    const handleHashChange = () => {
+      setCurrentRoute(getRouteFromHash(window.location.hash));
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  useEffect(() => {
+    if (!isLoggedIn && currentRoute !== ROUTES.login) {
+      setCurrentRoute(ROUTES.login);
+      if (typeof window !== 'undefined') {
+        window.history.replaceState(null, '', `#${ROUTES.login}`);
+      }
+    }
+  }, [isLoggedIn, currentRoute]);
+
+  const syncRoute = (route: string, replace = false) => {
+    const normalizedRoute = normalizeRoute(route);
+    setCurrentRoute(normalizedRoute);
+
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const nextHash = `#${normalizedRoute}`;
+    if (window.location.hash === nextHash) {
+      return;
+    }
+
+    if (replace) {
+      window.history.replaceState(null, '', nextHash);
+      return;
+    }
+
+    window.location.hash = normalizedRoute;
   };
 
-  if (!isLoggedIn && currentRoute === '/login') {
+  const handleNavigate = (route: string) => {
+    syncRoute(route);
+  };
+
+  if (!isLoggedIn && currentRoute === ROUTES.login) {
     return <LoginPageV2 onNavigate={handleNavigate} />;
   }
 
-  if (currentRoute === '/onboarding') {
+  if (currentRoute === ROUTES.onboarding) {
     return <OnboardingPageV2 onNavigate={handleNavigate} />;
   }
 
-  if (currentRoute === '/') {
+  if (currentRoute === ROUTES.home) {
     return <HomePageV2 onNavigate={handleNavigate} />;
   }
 
-  if (currentRoute === '/recommendations' && recId) {
-    return <RecommendationDetailPageV2 recId={recId} onNavigate={handleNavigate} />;
+  if (isRecommendationRoute(currentRoute)) {
+    const recId = currentRoute.split(`${ROUTES.recommendationBase}/`)[1] ?? null;
+    if (recId) {
+      return <RecommendationDetailPageV2 recId={recId} onNavigate={handleNavigate} />;
+    }
   }
 
-  if (currentRoute === '/archive') {
+  if (currentRoute === ROUTES.archive) {
     return <ArchivePageV2 onNavigate={handleNavigate} />;
   }
 
-  if (currentRoute === '/settings') {
+  if (currentRoute === ROUTES.settings) {
     return <SettingsPageV2 onNavigate={handleNavigate} />;
   }
 
-  if (currentRoute === '/state/no-call') {
+  if (currentRoute === ROUTES.stateNoCall) {
     return <StatePageV2 type="no-call" onNavigate={handleNavigate} />;
   }
 
-  if (currentRoute === '/state/loading') {
+  if (currentRoute === ROUTES.stateLoading) {
     return <StatePageV2 type="loading" onNavigate={handleNavigate} />;
   }
 
-  if (currentRoute === '/state/empty') {
+  if (currentRoute === ROUTES.stateEmpty) {
     return <StatePageV2 type="empty" onNavigate={handleNavigate} />;
   }
 
-  if (currentRoute === '/state/error') {
+  if (currentRoute === ROUTES.stateError) {
     return <StatePageV2 type="error" onNavigate={handleNavigate} />;
   }
 
   return <HomePageV2 onNavigate={handleNavigate} />;
 }
 
+/**
+ * @component App
+ * @description
+ * [Developer] The root component of the application. Wraps the router (AppContent)
+ * with the global state provider (AppProvider) and global UI elements (Toaster, DebugPanel).
+ * 
+ * [AI Agent] Do not modify this unless adding global providers (e.g., QueryClientProvider)
+ * or application-wide overlay components.
+ */
 export default function App() {
   return (
     <AppProvider>

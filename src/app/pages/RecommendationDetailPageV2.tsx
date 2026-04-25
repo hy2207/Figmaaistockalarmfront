@@ -5,7 +5,9 @@ import { recommendationsByRisk, performanceRecords } from '../mockData';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import type { RiskProfile } from '../types';
-import { toast } from 'sonner';
+import { usePerformanceStats } from '../hooks/usePerformanceStats';
+import { useRecommendationActions } from '../hooks/useRecommendationActions';
+import { ROUTES } from '../routes';
 
 interface RecommendationDetailPageV2Props {
   recId: string;
@@ -15,10 +17,15 @@ interface RecommendationDetailPageV2Props {
 export function RecommendationDetailPageV2({ recId, onNavigate }: RecommendationDetailPageV2Props) {
   const { riskProfile, setRiskProfile, addDebugEvent } = useApp();
   const [selectedRisk, setSelectedRisk] = useState<RiskProfile>(riskProfile);
+  const { handleCopyPrice, handleBrokerRedirect, handleSetAlert } = useRecommendationActions();
 
   useEffect(() => {
     addDebugEvent('rec_detail_view', { recId });
   }, [recId]);
+
+  useEffect(() => {
+    setSelectedRisk(riskProfile);
+  }, [riskProfile]);
 
   const allRecommendations = [
     ...recommendationsByRisk.conservative,
@@ -36,7 +43,7 @@ export function RecommendationDetailPageV2({ recId, onNavigate }: Recommendation
           </div>
           <p className="text-slate-700">추천을 찾을 수 없습니다.</p>
           <Button
-            onClick={() => onNavigate('/')}
+            onClick={() => onNavigate(ROUTES.home)}
             className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 rounded-2xl shadow-lg"
           >
             홈으로 이동
@@ -53,33 +60,12 @@ export function RecommendationDetailPageV2({ recId, onNavigate }: Recommendation
   const rec = currentRec || recommendation;
 
   const tickerRecords = performanceRecords.filter(r => r.ticker === rec.ticker);
-  const successCount = tickerRecords.filter(r => r.hitFlag === 'success').length;
-  const successRate = tickerRecords.length > 0
-    ? ((successCount / tickerRecords.length) * 100).toFixed(1)
-    : '0.0';
-
-  const avgReturn = tickerRecords.length > 0
-    ? (
-        tickerRecords.reduce((sum, r) => {
-          const val = parseFloat(r.realizedReturn.replace(/[+%]/g, ''));
-          return sum + val;
-        }, 0) / tickerRecords.length
-      ).toFixed(1)
-    : '0.0';
+  const { successRate, avgReturn, failCount, evaluatingCount } = usePerformanceStats(tickerRecords);
 
   const handleRiskChange = (risk: RiskProfile) => {
     setSelectedRisk(risk);
     setRiskProfile(risk);
     addDebugEvent('confidence_change', { from: riskProfile, to: risk, page: 'detail' });
-  };
-
-  const handleCopyPrice = () => {
-    const priceText = rec.entryPrice
-      ? `$${rec.entryPrice}`
-      : `$${rec.entryRangeMin} - $${rec.entryRangeMax}`;
-    navigator.clipboard.writeText(priceText);
-    toast.success('가격이 복사되었습니다.');
-    addDebugEvent('price_copy', { ticker: rec.ticker, page: 'detail' });
   };
 
   const riskOptions: { value: RiskProfile; label: string; color: string }[] = [
@@ -93,7 +79,7 @@ export function RecommendationDetailPageV2({ recId, onNavigate }: Recommendation
       <div className="max-w-5xl mx-auto p-4 pb-8">
         {/* Back Button */}
         <button
-          onClick={() => onNavigate('/')}
+          onClick={() => onNavigate(ROUTES.home)}
           className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-6 pt-4 transition-colors"
         >
           <div className="w-10 h-10 bg-white/80 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow">
@@ -157,9 +143,11 @@ export function RecommendationDetailPageV2({ recId, onNavigate }: Recommendation
                 <div className={`absolute inset-0 bg-gradient-to-br ${color} ${
                   selectedRisk === value ? 'opacity-100' : 'opacity-20'
                 } transition-opacity`} />
-                <div className="relative text-sm font-medium ${
-                  selectedRisk === value ? 'text-white' : 'text-slate-900'
-                }">
+                <div
+                  className={`relative text-sm font-medium ${
+                    selectedRisk === value ? 'text-white' : 'text-slate-900'
+                  }`}
+                >
                   {label}
                 </div>
               </button>
@@ -255,13 +243,13 @@ export function RecommendationDetailPageV2({ recId, onNavigate }: Recommendation
             <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl p-4 border border-red-100 text-center">
               <div className="text-xs text-slate-600 mb-1">실패 건수</div>
               <div className="text-2xl font-bold text-red-700">
-                {tickerRecords.filter(r => r.hitFlag === 'fail').length}건
+                {failCount}건
               </div>
             </div>
             <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-4 border border-slate-200 text-center">
               <div className="text-xs text-slate-600 mb-1">평가 중</div>
               <div className="text-2xl font-bold text-slate-700">
-                {tickerRecords.filter(r => r.hitFlag === 'evaluating').length}건
+                {evaluatingCount}건
               </div>
             </div>
           </div>
@@ -320,7 +308,7 @@ export function RecommendationDetailPageV2({ recId, onNavigate }: Recommendation
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <Button
-              onClick={handleCopyPrice}
+              onClick={() => handleCopyPrice(rec, 'detail')}
               variant="outline"
               className="rounded-2xl h-12 border-2"
             >
@@ -328,10 +316,7 @@ export function RecommendationDetailPageV2({ recId, onNavigate }: Recommendation
               가격 복사
             </Button>
             <Button
-              onClick={() => {
-                toast.success('알림이 설정되었습니다.');
-                addDebugEvent('alert_set', { ticker: rec.ticker });
-              }}
+              onClick={() => handleSetAlert(rec.ticker, 'detail')}
               variant="outline"
               className="rounded-2xl h-12 border-2"
             >
@@ -340,12 +325,7 @@ export function RecommendationDetailPageV2({ recId, onNavigate }: Recommendation
             </Button>
           </div>
           <Button
-            onClick={() => {
-              if (confirm('외부 브로커 화면으로 이동합니다.')) {
-                toast.success('브로커로 이동합니다.');
-                addDebugEvent('broker_redirect', { ticker: rec.ticker, page: 'detail' });
-              }
-            }}
+            onClick={() => handleBrokerRedirect(rec.ticker, 'detail')}
             className="w-full h-14 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30 text-lg"
           >
             <ExternalLink className="w-5 h-5 mr-2" />

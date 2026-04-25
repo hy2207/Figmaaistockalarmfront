@@ -1,6 +1,7 @@
 import { Button } from '../components/ui/button';
 import { Skeleton } from '../components/ui/skeleton';
 import { AlertCircle, FileX, ServerCrash, Sparkles } from 'lucide-react';
+import { ROUTES } from '../routes';
 
 interface StatePageV2Props {
   type: 'no-call' | 'loading' | 'empty' | 'error';
@@ -52,14 +53,14 @@ export function StatePageV2({ type, onNavigate }: StatePageV2Props) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Button
-              onClick={() => onNavigate('/settings')}
+              onClick={() => onNavigate(ROUTES.settings)}
               variant="outline"
               className="rounded-2xl border-2"
             >
               관심 종목 수정
             </Button>
             <Button
-              onClick={() => onNavigate('/')}
+              onClick={() => onNavigate(ROUTES.home)}
               className="rounded-2xl bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg shadow-amber-500/30"
             >
               다시 확인
@@ -96,7 +97,7 @@ export function StatePageV2({ type, onNavigate }: StatePageV2Props) {
             </p>
           </div>
           <Button
-            onClick={() => onNavigate('/')}
+            onClick={() => onNavigate(ROUTES.home)}
             className="w-full rounded-2xl h-12 bg-gradient-to-r from-slate-700 to-slate-900 hover:from-slate-800 hover:to-black shadow-lg"
           >
             <Sparkles className="w-4 h-4 mr-2" />
@@ -141,7 +142,7 @@ export function StatePageV2({ type, onNavigate }: StatePageV2Props) {
               다시 시도
             </Button>
             <Button
-              onClick={() => onNavigate('/')}
+              onClick={() => onNavigate(ROUTES.home)}
               className="rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-lg shadow-red-500/30"
             >
               홈으로 이동

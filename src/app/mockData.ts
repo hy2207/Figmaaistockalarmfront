@@ -8,18 +8,22 @@ export const mockUser: User = {
 };
 
 export const availableWatchlistItems: WatchlistItem[] = [
-  { ticker: 'AAPL', name: 'Apple' },
-  { ticker: 'TSLA', name: 'Tesla' },
-  { ticker: 'NVDA', name: 'Nvidia' },
-  { ticker: 'MSFT', name: 'Microsoft' },
-  { ticker: 'AMZN', name: 'Amazon' },
-  { ticker: 'META', name: 'Meta' },
-  { ticker: 'TECH', name: 'Technology sector' },
-  { ticker: 'HEALTH', name: 'Healthcare sector' },
-  { ticker: 'CONSUMER', name: 'Consumer sector' },
+  { ticker: 'AAPL', name: 'Apple', kind: 'ticker' },
+  { ticker: 'TSLA', name: 'Tesla', kind: 'ticker' },
+  { ticker: 'NVDA', name: 'Nvidia', kind: 'ticker' },
+  { ticker: 'MSFT', name: 'Microsoft', kind: 'ticker' },
+  { ticker: 'AMZN', name: 'Amazon', kind: 'ticker' },
+  { ticker: 'META', name: 'Meta', kind: 'ticker' },
+  { ticker: 'TECH', name: 'Technology sector', kind: 'sector' },
+  { ticker: 'HEALTH', name: 'Healthcare sector', kind: 'sector' },
+  { ticker: 'CONSUMER', name: 'Consumer sector', kind: 'sector' },
 ];
 
 export const defaultWatchlist: string[] = ['AAPL', 'TSLA', 'NVDA'];
+
+export const watchlistItemByTicker = Object.fromEntries(
+  availableWatchlistItems.map(item => [item.ticker, item])
+);
 
 // Balanced recommendations
 const balancedRecommendations: RecommendationCard[] = [
@@ -65,6 +69,51 @@ const balancedRecommendations: RecommendationCard[] = [
     confidenceScore: 'balanced',
     actionLabel: '반등 시 매도',
     reasonLine: '단기 반등 이후 거래량이 약해져 3영업일 내 되돌림 가능성이 있습니다.',
+  },
+  {
+    id: 'tech-balanced',
+    ticker: 'TECH',
+    companyName: 'Technology sector',
+    direction: 'BUY',
+    entryRangeMin: 122,
+    entryRangeMax: 125,
+    targetRangeMin: 130,
+    targetRangeMax: 134,
+    stopPrice: 118,
+    holdDays: 5,
+    confidenceScore: 'balanced',
+    actionLabel: '섹터 분할 진입',
+    reasonLine: '대형 기술주의 실적 기대와 AI 인프라 수요가 섹터 전반의 단기 강세를 지지합니다.',
+  },
+  {
+    id: 'health-balanced',
+    ticker: 'HEALTH',
+    companyName: 'Healthcare sector',
+    direction: 'BUY',
+    entryRangeMin: 88,
+    entryRangeMax: 90,
+    targetRangeMin: 94,
+    targetRangeMax: 97,
+    stopPrice: 85,
+    holdDays: 6,
+    confidenceScore: 'balanced',
+    actionLabel: '방어 섹터 매수',
+    reasonLine: '금리 변동성 구간에서 헬스케어의 방어적 수급이 상대 강도를 유지하고 있습니다.',
+  },
+  {
+    id: 'consumer-balanced',
+    ticker: 'CONSUMER',
+    companyName: 'Consumer sector',
+    direction: 'SELL',
+    entryRangeMin: 74,
+    entryRangeMax: 76,
+    targetRangeMin: 69,
+    targetRangeMax: 71,
+    stopPrice: 79,
+    holdDays: 4,
+    confidenceScore: 'balanced',
+    actionLabel: '반등 시 비중 축소',
+    reasonLine: '소비 둔화 우려가 남아 있어 경기민감 소비 섹터는 단기 조정 가능성을 열어둬야 합니다.',
   },
 ];
 
@@ -113,6 +162,51 @@ const aggressiveRecommendations: RecommendationCard[] = [
     actionLabel: '단기 매도',
     reasonLine: '단기 반등 이후 거래량이 약해져 3영업일 내 되돌림 가능성이 있습니다.',
   },
+  {
+    id: 'tech-aggressive',
+    ticker: 'TECH',
+    companyName: 'Technology sector',
+    direction: 'BUY',
+    entryRangeMin: 124,
+    entryRangeMax: 127,
+    targetRangeMin: 134,
+    targetRangeMax: 138,
+    stopPrice: 119,
+    holdDays: 3,
+    confidenceScore: 'aggressive',
+    actionLabel: '섹터 빠른 진입',
+    reasonLine: 'AI 관련 대형주의 모멘텀이 강해 기술 섹터의 단기 추세 추종 구간으로 판단합니다.',
+  },
+  {
+    id: 'health-aggressive',
+    ticker: 'HEALTH',
+    companyName: 'Healthcare sector',
+    direction: 'BUY',
+    entryRangeMin: 89,
+    entryRangeMax: 91,
+    targetRangeMin: 96,
+    targetRangeMax: 99,
+    stopPrice: 86,
+    holdDays: 4,
+    confidenceScore: 'aggressive',
+    actionLabel: '돌파 추종',
+    reasonLine: '헬스케어 대형주의 실적 발표 전 수급 유입이 이어져 단기 상방 여지가 있습니다.',
+  },
+  {
+    id: 'consumer-aggressive',
+    ticker: 'CONSUMER',
+    companyName: 'Consumer sector',
+    direction: 'SELL',
+    entryRangeMin: 75,
+    entryRangeMax: 77,
+    targetRangeMin: 68,
+    targetRangeMax: 70,
+    stopPrice: 80,
+    holdDays: 3,
+    confidenceScore: 'aggressive',
+    actionLabel: '약세 추종',
+    reasonLine: '소비 섹터의 실적 가이던스 하향 가능성이 남아 있어 단기 하락 추세 대응이 유효합니다.',
+  },
 ];
 
 // Conservative recommendations
@@ -160,6 +254,51 @@ const conservativeRecommendations: RecommendationCard[] = [
     actionLabel: '보수 관찰',
     reasonLine: '단기 반등 이후 거래량이 약해져 3영업일 내 되돌림 가능성이 있습니다.',
   },
+  {
+    id: 'tech-conservative',
+    ticker: 'TECH',
+    companyName: 'Technology sector',
+    direction: 'BUY',
+    entryRangeMin: 119,
+    entryRangeMax: 122,
+    targetRangeMin: 127,
+    targetRangeMax: 131,
+    stopPrice: 116,
+    holdDays: 7,
+    confidenceScore: 'conservative',
+    actionLabel: '눌림 확인 후 진입',
+    reasonLine: '기술 섹터는 변동성이 크지만 실적 시즌 기대가 있어 조정 시 분할 접근이 유리합니다.',
+  },
+  {
+    id: 'health-conservative',
+    ticker: 'HEALTH',
+    companyName: 'Healthcare sector',
+    direction: 'BUY',
+    entryRangeMin: 87,
+    entryRangeMax: 88,
+    targetRangeMin: 92,
+    targetRangeMax: 95,
+    stopPrice: 84,
+    holdDays: 7,
+    confidenceScore: 'conservative',
+    actionLabel: '방어적 분할 진입',
+    reasonLine: '헬스케어는 방어적 특성상 변동성 구간에서도 상대적으로 안정적인 흐름을 기대할 수 있습니다.',
+  },
+  {
+    id: 'consumer-conservative',
+    ticker: 'CONSUMER',
+    companyName: 'Consumer sector',
+    direction: 'SELL',
+    entryRangeMin: 73,
+    entryRangeMax: 75,
+    targetRangeMin: 70,
+    targetRangeMax: 72,
+    stopPrice: 78,
+    holdDays: 5,
+    confidenceScore: 'conservative',
+    actionLabel: '신중한 비중 축소',
+    reasonLine: '경기 둔화 신호가 이어지는 동안 소비 섹터는 보수적으로 대응하는 편이 적절합니다.',
+  },
 ];
 
 export const recommendationsByRisk = {
@@ -169,6 +308,14 @@ export const recommendationsByRisk = {
 };
 
 export const performanceRecords: PerformanceRecord[] = [
+  {
+    ticker: 'TECH',
+    predictedDirection: 'BUY',
+    realizedReturn: '+3.9%',
+    hitFlag: 'success',
+    evaluationWindowDays: 5,
+    evaluatedAt: '2026-04-20',
+  },
   {
     ticker: 'NVDA',
     predictedDirection: 'BUY',
@@ -194,6 +341,14 @@ export const performanceRecords: PerformanceRecord[] = [
     evaluatedAt: '2026-04-17',
   },
   {
+    ticker: 'HEALTH',
+    predictedDirection: 'BUY',
+    realizedReturn: '+1.4%',
+    hitFlag: 'success',
+    evaluationWindowDays: 6,
+    evaluatedAt: '2026-04-17',
+  },
+  {
     ticker: 'META',
     predictedDirection: 'BUY',
     realizedReturn: '-1.2%',
@@ -215,6 +370,14 @@ export const performanceRecords: PerformanceRecord[] = [
     realizedReturn: '+1.6%',
     hitFlag: 'fail',
     evaluationWindowDays: 3,
+    evaluatedAt: '2026-04-14',
+  },
+  {
+    ticker: 'CONSUMER',
+    predictedDirection: 'SELL',
+    realizedReturn: '-1.1%',
+    hitFlag: 'fail',
+    evaluationWindowDays: 4,
     evaluatedAt: '2026-04-14',
   },
   {

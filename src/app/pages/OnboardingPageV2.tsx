@@ -4,6 +4,8 @@ import { availableWatchlistItems } from '../mockData';
 import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 import { Check, Sparkles } from 'lucide-react';
+import { Badge } from '../components/ui/badge';
+import { ROUTES } from '../routes';
 
 interface OnboardingPageV2Props {
   onNavigate: (route: string) => void;
@@ -33,7 +35,7 @@ export function OnboardingPageV2({ onNavigate }: OnboardingPageV2Props) {
 
     setWatchlist(selectedItems);
     addDebugEvent('onboarding_complete', { watchlist: selectedItems });
-    onNavigate('/');
+    onNavigate(ROUTES.home);
   };
 
   return (
@@ -61,13 +63,13 @@ export function OnboardingPageV2({ onNavigate }: OnboardingPageV2Props) {
             <span className="text-slate-600">3 선택됨</span>
           </div>
           <p className="text-sm text-slate-600 max-w-md mx-auto">
-            선택한 종목은 아침 추천 카드 생성에 사용됩니다
+            선택한 종목 또는 섹터는 홈 추천 카드와 이력 필터 기준으로 사용됩니다
           </p>
         </div>
 
         {/* Selection Grid */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-          {availableWatchlistItems.map(({ ticker, name }) => {
+          {availableWatchlistItems.map(({ ticker, name, kind }) => {
             const isSelected = selectedItems.includes(ticker);
             return (
               <button
@@ -95,8 +97,16 @@ export function OnboardingPageV2({ onNavigate }: OnboardingPageV2Props) {
 
                 {/* Content */}
                 <div className="relative space-y-2">
-                  <div className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-slate-900'}`}>
-                    {ticker}
+                  <div className="flex items-center justify-center gap-2">
+                    <div className={`text-xl font-bold ${isSelected ? 'text-white' : 'text-slate-900'}`}>
+                      {ticker}
+                    </div>
+                    <Badge
+                      variant="outline"
+                      className={`text-[10px] ${isSelected ? 'border-white/30 bg-white/10 text-white' : ''}`}
+                    >
+                      {kind === 'ticker' ? '종목' : '섹터'}
+                    </Badge>
                   </div>
                   <div className={`text-sm ${isSelected ? 'text-blue-100' : 'text-slate-600'}`}>
                     {name}

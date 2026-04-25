@@ -12,6 +12,7 @@ export interface User {
 export interface WatchlistItem {
   ticker: string;
   name: string;
+  kind: 'ticker' | 'sector';
 }
 
 export interface RecommendationCard {

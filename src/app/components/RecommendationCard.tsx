@@ -1,117 +1,140 @@
-import { Copy, ArrowRight, ExternalLink } from 'lucide-react';
+import { Copy, ArrowRight, ExternalLink, TrendingUp, TrendingDown, Target, Calendar } from 'lucide-react';
 import type { RecommendationCard as RecommendationCardType } from '../types';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { toast } from 'sonner';
-import { useApp } from '../context/AppContext';
+import { useRecommendationActions } from '../hooks/useRecommendationActions';
 
 interface RecommendationCardProps {
-  recommendation: RecommendationCardType;
-  onViewDetail: () => void;
+  rec: RecommendationCardType;
+  onCardClick: (recId: string) => void;
 }
 
-export function RecommendationCard({ recommendation, onViewDetail }: RecommendationCardProps) {
-  const { addDebugEvent } = useApp();
-
-  const handleCopyPrice = () => {
-    const priceText = recommendation.entryPrice
-      ? `$${recommendation.entryPrice}`
-      : `$${recommendation.entryRangeMin} - $${recommendation.entryRangeMax}`;
-    navigator.clipboard.writeText(priceText);
-    toast.success('가격이 복사되었습니다.');
-    addDebugEvent('price_copy', { ticker: recommendation.ticker });
-  };
-
-  const handleBrokerRedirect = () => {
-    addDebugEvent('broker_redirect', { ticker: recommendation.ticker });
-    if (confirm('외부 브로커 화면으로 이동합니다.')) {
-      toast.success('브로커로 이동합니다.');
-    }
-  };
+export function RecommendationCard({ rec, onCardClick }: RecommendationCardProps) {
+  const { handleCopyPrice, handleBrokerRedirect } = useRecommendationActions();
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
-      <div className="flex items-start justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-slate-900">{recommendation.ticker}</h3>
-            <Badge
-              variant={recommendation.direction === 'BUY' ? 'default' : 'destructive'}
-              className={
-                recommendation.direction === 'BUY'
-                  ? 'bg-green-600 hover:bg-green-700'
-                  : 'bg-red-600 hover:bg-red-700'
-              }
-            >
-              {recommendation.direction}
-            </Badge>
+    <div
+      className="group bg-white/80 backdrop-blur-xl border border-white/50 rounded-3xl shadow-xl shadow-blue-500/5 p-6 hover:shadow-2xl hover:shadow-blue-500/10 transition-all duration-300 cursor-pointer"
+      onClick={() => onCardClick(rec.id)}
+    >
+      {/* Card Header */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center gap-3">
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg ${
+            rec.direction === 'BUY'
+              ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-green-500/30'
+              : 'bg-gradient-to-br from-red-500 to-rose-600 shadow-red-500/30'
+          }`}>
+            {rec.direction === 'BUY' ? (
+              <TrendingUp className="w-7 h-7 text-white" />
+            ) : (
+              <TrendingDown className="w-7 h-7 text-white" />
+            )}
           </div>
-          <div className="text-sm text-slate-600">{recommendation.companyName}</div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-bold text-slate-900">{rec.ticker}</h3>
+              <Badge
+                className={`${
+                  rec.direction === 'BUY'
+                    ? 'bg-green-100 text-green-700 border-green-200'
+                    : 'bg-red-100 text-red-700 border-red-200'
+                } border`}
+              >
+                {rec.direction}
+              </Badge>
+            </div>
+            <div className="text-sm text-slate-600">{rec.companyName}</div>
+          </div>
         </div>
-        <div className="text-sm text-slate-600">{recommendation.actionLabel}</div>
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-slate-600">진입가</span>
-          <span className="text-slate-900">
-            {recommendation.entryPrice
-              ? `$${recommendation.entryPrice.toFixed(2)}`
-              : `$${recommendation.entryRangeMin} - $${recommendation.entryRangeMax}`}
-          </span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-slate-600">목표가</span>
-          <span className="text-green-600">
-            {recommendation.targetPrice
-              ? `$${recommendation.targetPrice.toFixed(2)}`
-              : `$${recommendation.targetRangeMin} - $${recommendation.targetRangeMax}`}
-          </span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-slate-600">손절가</span>
-          <span className="text-red-600">${recommendation.stopPrice.toFixed(2)}</span>
-        </div>
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-slate-600">권장 보유</span>
-          <span className="text-slate-900">{recommendation.holdDays}일</span>
+        <div className="bg-blue-50 px-3 py-1 rounded-full">
+          <span className="text-xs font-medium text-blue-700">{rec.actionLabel}</span>
         </div>
       </div>
 
-      <div className="pt-3 border-t border-slate-100">
-        <p className="text-sm text-slate-700 leading-relaxed">{recommendation.reasonLine}</p>
+      {/* Price Grid */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-4 border border-blue-100">
+          <div className="flex items-center gap-2 mb-1">
+            <Target className="w-4 h-4 text-blue-600" />
+            <span className="text-xs text-slate-600">진입가</span>
+          </div>
+          <div className="text-lg font-bold text-slate-900">
+            {rec.entryPrice
+              ? `$${rec.entryPrice.toFixed(2)}`
+              : `$${rec.entryRangeMin}-${rec.entryRangeMax}`}
+          </div>
+        </div>
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 border border-green-100">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingUp className="w-4 h-4 text-green-600" />
+            <span className="text-xs text-slate-600">목표가</span>
+          </div>
+          <div className="text-lg font-bold text-green-700">
+            {rec.targetPrice
+              ? `$${rec.targetPrice.toFixed(2)}`
+              : `$${rec.targetRangeMin}-${rec.targetRangeMax}`}
+          </div>
+        </div>
+        <div className="bg-gradient-to-br from-red-50 to-rose-50 rounded-2xl p-4 border border-red-100">
+          <div className="flex items-center gap-2 mb-1">
+            <TrendingDown className="w-4 h-4 text-red-600" />
+            <span className="text-xs text-slate-600">손절가</span>
+          </div>
+          <div className="text-lg font-bold text-red-700">${rec.stopPrice.toFixed(2)}</div>
+        </div>
+        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4 border border-purple-100">
+          <div className="flex items-center gap-2 mb-1">
+            <Calendar className="w-4 h-4 text-purple-600" />
+            <span className="text-xs text-slate-600">권장 보유</span>
+          </div>
+          <div className="text-lg font-bold text-slate-900">{rec.holdDays}일</div>
+        </div>
       </div>
 
-      <div className="flex gap-2">
+      {/* Reason */}
+      <div className="bg-gradient-to-r from-slate-50 to-blue-50 rounded-2xl p-4 mb-4 border border-slate-100">
+        <p className="text-sm text-slate-700 leading-relaxed">{rec.reasonLine}</p>
+      </div>
+
+      {/* Actions */}
+      <div className="grid grid-cols-3 gap-2">
         <Button
-          onClick={handleCopyPrice}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleCopyPrice(rec, 'home');
+          }}
           variant="outline"
           size="sm"
-          className="flex-1"
+          className="rounded-xl border-2 hover:bg-blue-50 hover:border-blue-300"
         >
           <Copy className="w-4 h-4 mr-1" />
-          가격 복사
+          복사
         </Button>
         <Button
-          onClick={onViewDetail}
-          variant="default"
+          onClick={(e) => {
+            e.stopPropagation();
+            onCardClick(rec.id);
+          }}
           size="sm"
-          className="flex-1 bg-blue-600 hover:bg-blue-700"
+          className="rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30"
         >
-          상세 보기
+          상세
           <ArrowRight className="w-4 h-4 ml-1" />
         </Button>
+        <Button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleBrokerRedirect(rec.ticker, 'home');
+          }}
+          variant="outline"
+          size="sm"
+          className="rounded-xl border-2 hover:bg-indigo-50 hover:border-indigo-300"
+        >
+          <ExternalLink className="w-4 h-4 mr-1" />
+          매매
+        </Button>
       </div>
-
-      <Button
-        onClick={handleBrokerRedirect}
-        variant="outline"
-        size="sm"
-        className="w-full"
-      >
-        <ExternalLink className="w-4 h-4 mr-1" />
-        브로커로 이동
-      </Button>
     </div>
   );
 }

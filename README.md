@@ -69,9 +69,9 @@
 
 **2. 산출 문서 정리**
 프로토타입 평가 및 구체적인 아키텍처는 다음 문서를 참고하세요.
-- [UX 핵심 시나리오 (UX Flow)](../docs/UX_FLOW.md)
-- [컴포넌트 구조 현황 및 개선점 분석](../docs/COMPONENT_ARCHITECTURE.md)
-- [코드 품질 평가 보고서](../docs/CODE_QUALITY.md)
+- [UX 핵심 시나리오 (UX Flow)](./docs/UX_FLOW.md)
+- [컴포넌트 구조 현황 및 개선점 분석](./docs/COMPONENT_ARCHITECTURE.md)
+- [코드 품질 평가 보고서](./docs/CODE_QUALITY.md)
 
 **3. 기존 업데이트 내용**
 
@@ -101,11 +101,11 @@
 
 | 로그인 | 온보딩 | 홈(추천 카드) |
 |---|---|---|
-| <img src="../docs/images/01_login.png" width="250" alt="Login"> | <img src="../docs/images/02_onboarding.png" width="250" alt="Onboarding"> | <img src="../docs/images/03_home.png" width="250" alt="Home"> |
+| <img src="./docs/images/01_login.png" width="250" alt="Login"> | <img src="./docs/images/02_onboarding.png" width="250" alt="Onboarding"> | <img src="./docs/images/03_home.png" width="250" alt="Home"> |
 
 | 이력 | 설정 |
 |---|---|
-| <img src="../docs/images/04_archive.png" width="250" alt="Archive"> | <img src="../docs/images/05_settings.png" width="250" alt="Settings"> |
+| <img src="./docs/images/04_archive.png" width="250" alt="Archive"> | <img src="./docs/images/05_settings.png" width="250" alt="Settings"> |
 
 ## 화면별 역할
 

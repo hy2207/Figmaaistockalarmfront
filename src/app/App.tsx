@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
-import { LoginPage } from './pages/LoginPage';
-import { OnboardingPage } from './pages/OnboardingPage';
-import { HomePage } from './pages/HomePage';
-import { RecommendationDetailPage } from './pages/RecommendationDetailPage';
-import { ArchivePage } from './pages/ArchivePage';
-import { SettingsPage } from './pages/SettingsPage';
-import { StatePage } from './pages/StatePage';
-import { DebugPanel } from './components/DebugPanel';
+import { LoginPageV2 } from './pages/LoginPageV2';
+import { OnboardingPageV2 } from './pages/OnboardingPageV2';
+import { HomePageV2 } from './pages/HomePageV2';
+import { RecommendationDetailPageV2 } from './pages/RecommendationDetailPageV2';
+import { ArchivePageV2 } from './pages/ArchivePageV2';
+import { SettingsPageV2 } from './pages/SettingsPageV2';
+import { StatePageV2 } from './pages/StatePageV2';
+import { DebugPanelV2 } from './components/DebugPanelV2';
 import { Toaster } from './components/ui/sonner';
 
 function AppContent() {
@@ -32,46 +32,46 @@ function AppContent() {
   };
 
   if (!isLoggedIn && currentRoute === '/login') {
-    return <LoginPage onNavigate={handleNavigate} />;
+    return <LoginPageV2 onNavigate={handleNavigate} />;
   }
 
   if (currentRoute === '/onboarding') {
-    return <OnboardingPage onNavigate={handleNavigate} />;
+    return <OnboardingPageV2 onNavigate={handleNavigate} />;
   }
 
   if (currentRoute === '/') {
-    return <HomePage onNavigate={handleNavigate} />;
+    return <HomePageV2 onNavigate={handleNavigate} />;
   }
 
   if (currentRoute === '/recommendations' && recId) {
-    return <RecommendationDetailPage recId={recId} onNavigate={handleNavigate} />;
+    return <RecommendationDetailPageV2 recId={recId} onNavigate={handleNavigate} />;
   }
 
   if (currentRoute === '/archive') {
-    return <ArchivePage onNavigate={handleNavigate} />;
+    return <ArchivePageV2 onNavigate={handleNavigate} />;
   }
 
   if (currentRoute === '/settings') {
-    return <SettingsPage onNavigate={handleNavigate} />;
+    return <SettingsPageV2 onNavigate={handleNavigate} />;
   }
 
   if (currentRoute === '/state/no-call') {
-    return <StatePage type="no-call" onNavigate={handleNavigate} />;
+    return <StatePageV2 type="no-call" onNavigate={handleNavigate} />;
   }
 
   if (currentRoute === '/state/loading') {
-    return <StatePage type="loading" onNavigate={handleNavigate} />;
+    return <StatePageV2 type="loading" onNavigate={handleNavigate} />;
   }
 
   if (currentRoute === '/state/empty') {
-    return <StatePage type="empty" onNavigate={handleNavigate} />;
+    return <StatePageV2 type="empty" onNavigate={handleNavigate} />;
   }
 
   if (currentRoute === '/state/error') {
-    return <StatePage type="error" onNavigate={handleNavigate} />;
+    return <StatePageV2 type="error" onNavigate={handleNavigate} />;
   }
 
-  return <HomePage onNavigate={handleNavigate} />;
+  return <HomePageV2 onNavigate={handleNavigate} />;
 }
 
 export default function App() {
@@ -79,7 +79,7 @@ export default function App() {
     <AppProvider>
       <div className="size-full">
         <AppContent />
-        <DebugPanel />
+        <DebugPanelV2 />
         <Toaster />
       </div>
     </AppProvider>
